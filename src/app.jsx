@@ -19,8 +19,7 @@ import {
   Copy,
   CheckCircle2,
   Globe,
-  Volume2,
-  VolumeX
+  Power
 } from 'lucide-react';
 
 const PORTFOLIO_DATA = {
@@ -547,8 +546,7 @@ const Footer = () => {
 };
 
 export default function App() {
-  const [loading, setLoading] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
+  const [stage, setStage] = useState('loading');
   const audioRef = useRef(null);
 
   useEffect(() => {
@@ -556,78 +554,109 @@ export default function App() {
     audioRef.current.loop = true;
     audioRef.current.volume = 0.3;
 
-    const playAudio = () => {
-      audioRef.current.play().catch(() => {});
-      window.removeEventListener('mousedown', playAudio);
-    };
-
-    window.addEventListener('mousedown', playAudio);
-
-    const timer = setTimeout(() => setLoading(false), 2000);
+    const timer = setTimeout(() => {
+      setStage('ready');
+    }, 3000);
 
     return () => {
       clearTimeout(timer);
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      window.removeEventListener('mousedown', playAudio);
+      if (audioRef.current) audioRef.current.pause();
     };
   }, []);
 
-  const toggleMute = () => {
+  const handleStart = () => {
     if (audioRef.current) {
-      audioRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
+      audioRef.current.play().catch(() => {});
     }
+    setStage('main');
   };
 
-  if (loading) {
-    return (
-      <div className="fixed inset-0 bg-zinc-950 flex flex-col items-center justify-center z-[9999]">
-        <motion.div 
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="flex items-center gap-4 text-emerald-500 mb-4"
-        >
-          <Shield size={48} className="animate-pulse" />
-        </motion.div>
-        <motion.div 
-          initial={{ width: 0 }}
-          animate={{ width: 200 }}
-          className="h-[2px] bg-emerald-500/20 relative overflow-hidden"
-        >
-          <motion.div 
-            animate={{ left: ['-100%', '100%'] }}
-            transition={{ repeat: Infinity, duration: 1 }}
-            className="absolute top-0 bottom-0 w-1/2 bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]"
-          />
-        </motion.div>
-        <div className="mt-4 font-mono text-[10px] text-zinc-500 uppercase tracking-[0.5em]">INITIALIZING PROTOCOLS</div>
-      </div>
-    );
-  }
-
   return (
-    <main className="bg-zinc-950 min-h-screen selection:bg-emerald-500/30 selection:text-emerald-400">
-      <button 
-        onClick={toggleMute}
-        className="fixed bottom-6 right-6 z-[100] w-12 h-12 bg-zinc-900 border border-white/10 rounded-full flex items-center justify-center text-emerald-500 hover:bg-zinc-800 transition-all shadow-2xl"
-      >
-        {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} className="animate-pulse" />}
-      </button>
+    <div className="bg-zinc-950 min-h-screen selection:bg-emerald-500/30 selection:text-emerald-400">
+      <AnimatePresence mode="wait">
+        {stage === 'loading' && (
+          <motion.div 
+            key="loader"
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-zinc-950 flex flex-col items-center justify-center z-[9999]"
+          >
+            <motion.div 
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="flex items-center gap-4 text-emerald-500 mb-4"
+            >
+              <Shield size={48} className="animate-pulse" />
+            </motion.div>
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: 200 }}
+              className="h-[2px] bg-emerald-500/20 relative overflow-hidden"
+            >
+              <motion.div 
+                animate={{ left: ['-100%', '100%'] }}
+                transition={{ repeat: Infinity, duration: 1 }}
+                className="absolute top-0 bottom-0 w-1/2 bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]"
+              />
+            </motion.div>
+            <div className="mt-4 font-mono text-[10px] text-zinc-500 uppercase tracking-[0.5em]">INITIALIZING PROTOCOLS</div>
+          </motion.div>
+        )}
 
-      <Navbar />
-      <Hero />
-      <About />
-      <Skills />
-      <TerminalSection />
-      <ResearchSection />
-      <Contact />
-      <Footer />
-      
-      <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-[100] opacity-[0.15]">
-        <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500/20 animate-scanline" />
-      </div>
+        {stage === 'ready' && (
+          <motion.div 
+            key="ready-screen"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            className="fixed inset-0 bg-zinc-950 flex flex-col items-center justify-center z-[9998] p-6 text-center"
+          >
+            <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-emerald-500/20 via-transparent to-transparent" />
+            
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <h2 className="text-emerald-500 font-mono text-sm tracking-[0.3em] mb-4 uppercase">System Identity Verified</h2>
+              <h1 className="text-white text-5xl md:text-7xl font-black mb-8 tracking-tighter">ARE YOU READY?</h1>
+              
+              <button 
+                onClick={handleStart}
+                className="group relative inline-flex items-center gap-4 px-12 py-5 bg-transparent overflow-hidden"
+              >
+                <div className="absolute inset-0 border-2 border-emerald-500/50 rounded-full transition-all group-hover:border-emerald-400 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-emerald-500 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+                <Power className="relative z-10 text-emerald-500 group-hover:text-zinc-950 transition-colors" size={24} />
+                <span className="relative z-10 text-white group-hover:text-zinc-950 font-bold text-xl tracking-widest transition-colors uppercase">Initialize Web</span>
+                <div className="absolute -right-2 -top-2 w-8 h-8 bg-emerald-500/20 blur-xl group-hover:bg-emerald-400/40 transition-all" />
+              </button>
+              
+              <p className="mt-8 font-mono text-[10px] text-zinc-600 uppercase tracking-widest">Warning: High Fidelity Experience Ahead</p>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {stage === 'main' && (
+          <motion.div 
+            key="main-content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <Navbar />
+            <Hero />
+            <About />
+            <Skills />
+            <TerminalSection />
+            <ResearchSection />
+            <Contact />
+            <Footer />
+            
+            <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-[100] opacity-[0.15]">
+              <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500/20 animate-scanline" />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes scanline {
@@ -654,7 +683,6 @@ export default function App() {
           background: #27272a;
         }
       `}} />
-    </main>
+    </div>
   );
 }
-
