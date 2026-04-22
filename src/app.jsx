@@ -470,7 +470,7 @@ const ResearchSection = () => {
 
 const Contact = () => {
   const [copied, setCopied] = useState(false);
-  const email = "acong.walnut@gmail.com";
+  const email = "walnutacong@gmail.com";
 
   const copyEmail = () => {
     const el = document.createElement('textarea');
